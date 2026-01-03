@@ -1,0 +1,5 @@
+{
+  "name": "Wirtualny Recepcjonista Restauracji",
+  "description": "Inteligentny asystent rezerwacji i informacji dla restauracji, stworzony przy użyciu Gemini API. Pomaga gościom poznać menu, godziny otwarcia i zarezerwować stolik.",
+  "requestFramePermissions": []
+}
