@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akademia Bezpieczeństwa - Interaktywna Gra Edukacyjna</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #0b0f19;
+            user-select: none;
+        }
+        .heading-font {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        /* Efekty świecenia neonowego dla elementów premium */
+        .glow-emerald {
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+            border-color: rgba(16, 185, 129, 0.4);
+        }
+        .glow-amber {
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+            border-color: rgba(245, 158, 11, 0.4);
+        }
+        .glow-blue {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+        .glow-rose {
+            box-shadow: 0 0 20px rgba(244, 63, 94, 0.2);
+            border-color: rgba(244, 63, 94, 0.4);
+        }
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: rgba(59, 130, 246, 0.5);
+            border-radius: 4px;
+        }
+        canvas {
+            display: block;
+            touch-action: none;
+        }
+    </style>
+</head>
+<body class="relative min-h-screen text-slate-100 flex flex-col justify-between overflow-x-hidden">
+
+    <div class="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black overflow-hidden">
+        <div class="absolute top-10 left-10 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div class="absolute bottom-10 right-10 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl animate-pulse" style="animation-duration: 8s;"></div>
+    </div>
+
+    <!-- Główny Kontener Aplikacji -->
+    <header class="w-full max-w-6xl mx-auto px-4 py-4 flex justify-between items-center border-b border-slate-800/60 backdrop-blur-md">
+        <div class="flex items-center space-x-3">
+            <div class="p-2.5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg shadow-blue-500/20">
+                <i class="fa-solid fa-shield-halved text-xl text-white"></i>
+            </div>
+            <div>
+                <h1 class="heading-font text-lg md:text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-indigo-200 to-emerald-400">
+                    Akademia Bezpieczeństwa
+                </h1>
+                <p class="text-[10px] md:text-xs text-slate-400 tracking-wider uppercase font-semibold">Tarcza Edukacyjna v2.0</p>
+            </div>
+        </div>
+        
+        <!-- Paski postępu i statystyk w nagłówku -->
+        <div class="flex items-center space-x-4">
+            <div class="hidden sm:flex flex-col items-end">
+                <span class="text-xs text-slate-400">Twój Poziom</span>
+                <span id="headerLevel" class="text-sm font-bold text-blue-400 heading-font">Rekrut</span>
+            </div>
+            <div class="bg-slate-900/80 border border-slate-800 px-3 py-1.5 rounded-lg flex items-center space-x-2">
+                <i class="fa-solid fa-award text-yellow-400"></i>
+                <span id="globalScore" class="font-bold heading-font text-sm text-yellow-400">0</span>
+                <span class="text-[10px] text-slate-500">pkt</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow w-full max-w-6xl mx-auto px-4 py-6 flex flex-col justify-center">
+        
+        <!-- 1. EKRAN STARTOWY -->
+        <div id="welcomeScreen" class="space-y-8 py-6 max-w-3xl mx-auto text-center">
+            <div class="space-y-4">
+                <span class="px-3 py-1 text-xs font-semibold text-blue-400 bg-blue-500/10 border border-blue-500/20 rounded-full uppercase tracking-wider">Gra edukacyjno-zręcznościowa</span>
+                <h2 class="heading-font text-4xl md:text-6xl font-extrabold text-white tracking-tight leading-none">
+                    Zostań Mistrzem <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">Bezpieczeństwa</span>
+                </h2>
+                <p class="text-slate-400 text-sm md:text-lg max-w-xl mx-auto">
+                    Sprawdź swoją wiedzę i refleks w realistycznych sytuacjach zagrożenia. Uratuj dom przed pożarem, zabezpiecz się w sieci, opanuj ruch drogowy i ocal komuś życie!
+                </p>
+            </div>
+
+            <!-- Karty wyboru trybu -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left max-w-2xl mx-auto">
+                <button onclick="startZoneSelect()" class="group p-5 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-blue-500/50 hover:bg-slate-900 transition-all duration-300 text-left glow-blue">
+                    <div class="flex items-center space-x-4">
+                        <div class="p-3 bg-blue-500/10 group-hover:bg-blue-500/20 rounded-xl text-blue-400 transition-colors">
+                            <i class="fa-solid fa-compass text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white text-lg heading-font group-hover:text-blue-300 transition-colors">1. Tryb Scenariuszy</h3>
+                            <p class="text-xs text-slate-400 mt-1">Interaktywne wyzwania decyzyjne w 4 kluczowych strefach życia.</p>
+                        </div>
+                    </div>
+                </button>
+
+                <button onclick="startArcadeGame()" class="group p-5 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-emerald-500/50 hover:bg-slate-900 transition-all duration-300 text-left glow-emerald">
+                    <div class="flex items-center space-x-4">
+                        <div class="p-3 bg-emerald-500/10 group-hover:bg-emerald-500/20 rounded-xl text-emerald-400 transition-colors">
+                            <i class="fa-solid fa-gamepad text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white text-lg heading-font group-hover:text-emerald-300 transition-colors">2. Łapacz Bezpieczeństwa</h3>
+                            <p class="text-xs text-slate-400 mt-1">Dynamiczna zręcznościówka. Chroń tarczą dobre nawyki przed zagrożeniami.</p>
+                        </div>
+                    </div>
+                </button>
+            </div>
+
+            <div class="pt-4">
+                <button onclick="startZoneSelect()" class="px-8 py-3.5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0 text-sm tracking-wider uppercase">
+                    Rozpocznij Naukę <i class="fa-solid fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. EKRAN WYBORU STREFY -->
+        <div id="zoneSelectScreen" class="hidden space-y-6">
+            <div class="text-center space-y-2">
+                <h3 class="heading-font text-2xl md:text-3xl font-extrabold text-white">Wybierz Strefę Szkoleniową</h3>
+                <p class="text-slate-400 text-sm">Zdobądź odznakę z każdej kategorii, aby uzyskać Certyfikat Bezpieczeństwa.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Strefa 1: Dom -->
+                <div class="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:bg-slate-900 transition duration-300 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full blur-2xl group-hover:bg-amber-500/10 transition-colors"></div>
+                    <div class="space-y-3">
+                        <div class="w-12 h-12 bg-amber-500/10 text-amber-400 rounded-xl flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-house-fire"></i>
+                        </div>
+                        <h4 class="font-bold text-lg text-white heading-font">Bezpieczny Dom</h4>
+                        <p class="text-xs text-slate-400">Pożary kuchenne, instalacje elektryczne i wycieki gazu. Dowiedz się jak reagować!</p>
+                    </div>
+                    <div class="pt-2">
+                        <button onclick="launchZone('dom')" class="w-full py-2 bg-amber-500/10 hover:bg-amber-500 text-amber-400 hover:text-slate-950 font-bold rounded-lg text-xs transition duration-200 uppercase tracking-wider">
+                            Uruchom Misję <i class="fa-solid fa-play ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Strefa 2: Droga -->
+                <div class="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:bg-slate-900 transition duration-300 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-colors"></div>
+                    <div class="space-y-3">
+                        <div class="w-12 h-12 bg-blue-500/10 text-blue-400 rounded-xl flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-road"></i>
+                        </div>
+                        <h4 class="font-bold text-lg text-white heading-font">Mistrz Ruchu</h4>
+                        <p class="text-xs text-slate-400">Pasy, odblaski, rowerzyści i hulajnogi elektryczne. Zadbaj o bezpieczeństwo na drodze.</p>
+                    </div>
+                    <div class="pt-2">
+                        <button onclick="launchZone('droga')" class="w-full py-2 bg-blue-500/10 hover:bg-blue-500 text-blue-400 hover:text-slate-950 font-bold rounded-lg text-xs transition duration-200 uppercase tracking-wider">
+                            Uruchom Misję <i class="fa-solid fa-play ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Strefa 3: Cyber-sieć -->
+                <div class="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:bg-slate-900 transition duration-300 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl group-hover:bg-emerald-500/10 transition-colors"></div>
+                    <div class="space-y-3">
+                        <div class="w-12 h-12 bg-emerald-500/10 text-emerald-400 rounded-xl flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-user-shield"></i>
+                        </div>
+                        <h4 class="font-bold text-lg text-white heading-font">Cyber-Tarcza</h4>
+                        <p class="text-xs text-slate-400">Wykrywaj internetowych oszustów, chroń swoje dane i twórz niezniszczalne hasła.</p>
+                    </div>
+                    <div class="pt-2">
+                        <button onclick="launchZone('cyber')" class="w-full py-2 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-slate-950 font-bold rounded-lg text-xs transition duration-200 uppercase tracking-wider">
+                            Uruchom Misję <i class="fa-solid fa-play ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Strefa 4: Pierwsza pomoc -->
+                <div class="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:bg-slate-900 transition duration-300 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 rounded-full blur-2xl group-hover:bg-rose-500/10 transition-colors"></div>
+                    <div class="space-y-3">
+                        <div class="w-12 h-12 bg-rose-500/10 text-rose-400 rounded-xl flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-kit-medical"></i>
+                        </div>
+                        <h4 class="font-bold text-lg text-white heading-font">Pierwsza Pomoc</h4>
+                        <p class="text-xs text-slate-400">Numery ratunkowe i procedury przedmedyczne. Każda sekunda ma znaczenie!</p>
+                    </div>
+                    <div class="pt-2">
+                        <button onclick="launchZone('pomoc')" class="w-full py-2 bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-slate-950 font-bold rounded-lg text-xs transition duration-200 uppercase tracking-wider">
+                            Uruchom Misję <i class="fa-solid fa-play ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dolna sekcja powrotu i statystyk -->
+            <div class="flex flex-col sm:flex-row justify-between items-center bg-slate-900/30 border border-slate-800/60 rounded-xl p-4 gap-3">
+                <button onclick="showScreen('welcomeScreen')" class="px-4 py-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg text-sm transition">
+                    <i class="fa-solid fa-arrow-left mr-2"></i> Powrót do menu głównego
+                </button>
+                <div class="text-xs text-slate-400 flex items-center space-x-3">
+                    <span>Odznaki:</span>
+                    <span id="badgeCounter" class="bg-indigo-950 text-indigo-300 border border-indigo-800/50 px-2.5 py-0.5 rounded-full font-bold">0 / 4</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. INTERFEJS SCENARIUSZY -->
+        <div id="scenarioScreen" class="hidden max-w-2xl mx-auto space-y-6">
+            <!-- Górny pasek postępu w scenariuszu -->
+            <div class="flex justify-between items-center bg-slate-900/60 border border-slate-800 px-4 py-2 rounded-xl">
+                <div class="flex items-center space-x-2 text-xs">
+                    <span id="scenarioZoneLabel" class="font-bold tracking-wider uppercase text-blue-400">Strefa</span>
+                    <span class="text-slate-600">|</span>
+                    <span id="scenarioProgressLabel" class="text-slate-400">Pytanie 1/3</span>
+                </div>
+                <div class="w-24 bg-slate-800 h-2 rounded-full overflow-hidden">
+                    <div id="scenarioProgressBar" class="bg-blue-500 h-full w-0 transition-all duration-300"></div>
+                </div>
+            </div>
+
+            <!-- Karta Pytania -->
+            <div id="questionCard" class="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 relative overflow-hidden shadow-xl">
+                <!-- Ikona wizualna strefy w tle -->
+                <div class="absolute -top-10 -right-10 w-40 h-40 opacity-5 pointer-events-none text-[120px]" id="bgScenarioIcon">
+                    <i class="fa-solid fa-house-fire"></i>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold" id="situationBadge">
+                        <i class="fa-solid fa-triangle-exclamation mr-1"></i> Sytuacja kryzysowa
+                    </div>
+                    <h3 id="scenarioQuestionText" class="heading-font text-xl md:text-2xl font-extrabold text-white leading-snug">
+                        Co zrobisz, gdy w kuchni poczujesz silny zapach gazu?
+                    </h3>
+                </div>
+
+                <!-- Ilustracja wektorowa / opis kontekstowy -->
+                <div id="scenarioContext" class="p-4 bg-slate-950/60 border border-slate-800/80 rounded-2xl text-sm text-slate-300 leading-relaxed italic">
+                    "Wchodzisz do domu i czujesz charakterystyczny, nieprzyjemny zapach. Zdajesz sobie sprawę, że to gaz z kuchenki..."
+                </div>
+
+                <!-- Opcje odpowiedzi (generowane dynamicznie) -->
+                <div id="optionsContainer" class="grid grid-cols-1 gap-3">
+                    <!-- Przykład przycisku wyboru -->
+                    <button class="w-full text-left p-4 rounded-xl bg-slate-950/40 border border-slate-800/80 hover:border-slate-700 hover:bg-slate-950 text-sm font-semibold transition flex justify-between items-center group">
+                        <span>Zapalę światło, aby sprawdzić kuchenkę.</span>
+                        <i class="fa-solid fa-chevron-right text-slate-600 group-hover:text-slate-400 transition-colors"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. MODAL EDUKACYJNY / WYNIK ODPOWIEDZI -->
+        <div id="feedbackModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity duration-300">
+            <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl transform scale-95 transition-transform duration-300" id="feedbackContent">
+                <!-- Nagłówek statusu (Dobrze / Źle) -->
+                <div id="feedbackHeader" class="p-6 text-center space-y-3">
+                    <div id="feedbackIconWrap" class="w-16 h-16 rounded-full flex items-center justify-center text-3xl mx-auto">
+                        <i id="feedbackIcon" class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <h4 id="feedbackTitle" class="heading-font text-2xl font-extrabold">Doskonały Wybór!</h4>
+                </div>
+
+                <!-- Treść Edukacyjna -->
+                <div class="p-6 space-y-4 bg-slate-950/40 border-t border-b border-slate-800/60">
+                    <p id="feedbackText" class="text-sm text-slate-300 leading-relaxed">
+                        Gaz jest wysoce łatwopalny. Włączenie światła mogłoby wywołać iskrę w instalacji elektrycznej, doprowadzając do potężnego wybuchu!
+                    </p>
+                    <div class="flex items-center space-x-2 bg-blue-500/10 border border-blue-500/20 rounded-xl p-3 text-xs text-blue-300">
+                        <i class="fa-solid fa-circle-info text-blue-400 text-sm"></i>
+                        <span><strong>Zasada:</strong> Wietrzenie, brak ognia/iskier i ewakuacja to absolutny priorytet.</span>
+                    </div>
+                </div>
+
+                <!-- Przycisk Kontynuacji -->
+                <div class="p-6 flex justify-end">
+                    <button id="nextScenarioBtn" onclick="dismissFeedback()" class="px-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all text-sm tracking-wide uppercase">
+                        Dalej <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. EKRAN MINIGRY ZRĘCZNOŚCIOWEJ -->
+        <div id="arcadeScreen" class="hidden space-y-4 max-w-4xl mx-auto">
+            <div class="flex flex-col sm:flex-row justify-between items-center bg-slate-900/60 border border-slate-800 p-4 rounded-2xl gap-3">
+                <div class="flex items-center space-x-3">
+                    <div class="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg">
+                        <i class="fa-solid fa-shield-cat text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="heading-font font-bold text-white leading-none">Łapacz Bezpieczeństwa</h3>
+                        <p class="text-[10px] text-slate-400">Steruj tarczą za pomocą myszy/dotyku lub strzałek</p>
+                    </div>
+                </div>
+
+                <!-- Statystyki na żywo w minigrze -->
+                <div class="flex items-center space-x-4 text-sm font-bold">
+                    <div class="text-emerald-400 flex items-center space-x-1.5 bg-emerald-500/5 px-2.5 py-1 rounded-lg border border-emerald-500/15">
+                        <span>Punkty:</span>
+                        <span id="arcadeScore" class="heading-font">0</span>
+                    </div>
+                    <div class="text-rose-400 flex items-center space-x-1.5 bg-rose-500/5 px-2.5 py-1 rounded-lg border border-rose-500/15">
+                        <span>Życia:</span>
+                        <span id="arcadeLives" class="heading-font">3</span>
+                    </div>
+                </div>
+
+                <!-- Przyciski akcji -->
+                <div class="flex items-center space-x-2">
+                    <button id="arcadePauseBtn" onclick="toggleArcadePause()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold transition text-slate-300">
+                        Pauza
+                    </button>
+                    <button onclick="quitArcade()" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white rounded-lg text-xs font-bold transition">
+                        Wyjdź
+                    </button>
+                </div>
+            </div>
+
+            <!-- Interaktywny Canvas dla Minigry -->
+            <div class="relative w-full aspect-[4/3] max-h-[500px] rounded-3xl overflow-hidden border-2 border-slate-800 bg-slate-950 shadow-2xl">
+                <!-- Instrukcja przed startem gry -->
+                <div id="arcadeIntro" class="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-950/90 p-6 text-center space-y-4">
+                    <div class="w-16 h-16 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center text-3xl animate-bounce">
+                        <i class="fa-solid fa-gamepad"></i>
+                    </div>
+                    <h4 class="heading-font text-xl md:text-2xl font-extrabold text-white">Chroń Dobre Nawyki!</h4>
+                    <p class="text-slate-400 text-xs md:text-sm max-w-sm leading-relaxed">
+                        Poruszaj zieloną <strong>Tarczą Bezpieczeństwa</strong>. Łap bezpieczne zachowania (zielone) i omijaj niebezpieczne (czerwone).
+                    </p>
+                    <div class="grid grid-cols-2 gap-4 text-left text-xs bg-slate-900/60 p-3 rounded-xl max-w-xs border border-slate-800">
+                        <div class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check mr-1"></i> Łap: Kaski, Odblaski, Pasy, Silne Hasła</div>
+                        <div class="text-rose-400 font-bold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Unikaj: Ognia, Phishingu, Kabli, Czerwonego światła</div>
+                    </div>
+                    <button onclick="startArcadeLoop()" class="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl shadow-lg transition duration-200 text-sm tracking-wider uppercase">
+                        Zagraj Teraz <i class="fa-solid fa-circle-play ml-1"></i>
+                    </button>
+                </div>
+
+                <!-- Overlay pauzy -->
+                <div id="arcadePauseOverlay" class="hidden absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/80 text-center space-y-3">
+                    <h4 class="heading-font text-2xl font-extrabold text-amber-400 uppercase tracking-widest">Gra Wstrzymana</h4>
+                    <p class="text-slate-400 text-sm">Odpocznij chwilę i wznów, kiedy będziesz gotowy.</p>
+                    <button onclick="toggleArcadePause()" class="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg text-xs uppercase tracking-wider transition">
+                        Wznów Lot <i class="fa-solid fa-play ml-1"></i>
+                    </button>
+                </div>
+
+                <canvas id="arcadeCanvas" class="w-full h-full"></canvas>
+            </div>
+        </div>
+
+        <!-- 6. EKRAN PODSUMOWANIA (CERTYFIKAT) -->
+        <div id="summaryScreen" class="hidden max-w-lg mx-auto text-center space-y-6">
+            <div class="bg-slate-900/80 border-2 border-indigo-500/40 rounded-3xl p-6 md:p-8 space-y-6 relative overflow-hidden shadow-2xl glow-blue">
+                <!-- Zdobiony certyfikat wizualny -->
+                <div class="absolute inset-0 bg-gradient-to-t from-indigo-500/5 to-transparent pointer-events-none"></div>
+                
+                <div class="space-y-3">
+                    <div class="text-yellow-400 text-5xl animate-bounce">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
+                    <h3 class="heading-font text-2xl md:text-3xl font-extrabold text-white">Szkolenie Zakończone!</h3>
+                    <p class="text-slate-400 text-sm">Zdałeś wszystkie testy i zdobyłeś cenną wiedzę ratującą życie.</p>
+                </div>
+
+                <!-- Statystyki końcowe -->
+                <div class="grid grid-cols-2 gap-3 bg-slate-950/60 p-4 rounded-2xl border border-slate-800">
+                    <div class="text-center">
+                        <span class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Twój Wynik</span>
+                        <p id="summaryScore" class="heading-font text-2xl font-black text-yellow-400">0</p>
+                    </div>
+                    <div class="text-center">
+                        <span class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Tytuł</span>
+                        <p id="summaryRank" class="heading-font text-base font-bold text-blue-400">Mistrz Bezpieczeństwa</p>
+                    </div>
+                </div>
+
+                <!-- Odznaki -->
+                <div class="space-y-2">
+                    <span class="text-xs text-slate-400 uppercase tracking-wider">Zdobyte Odznaki Bezpieczeństwa</span>
+                    <div class="flex justify-center space-x-3" id="summaryBadges">
+                        <!-- Wygenerowane odznaki -->
+                    </div>
+                </div>
+
+                <div class="pt-4 flex flex-col sm:flex-row gap-2">
+                    <button onclick="startZoneSelect()" class="flex-1 py-3 bg-blue-500 hover:bg-blue-400 text-white font-bold rounded-xl transition text-sm">
+                        Powtórz Szkolenie
+                    </button>
+                    <button onclick="showScreen('welcomeScreen')" class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl transition text-sm">
+                        Menu Główne
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Stopka informacyjna -->
+    <footer class="w-full max-w-6xl mx-auto px-4 py-4 text-center border-t border-slate-900/60 text-xs text-slate-500 flex flex-col sm:flex-row justify-between items-center gap-2">
+        <p>&copy; 2026 Akademia Bezpieczeństwa. Dbaj o siebie i innych.</p>
+        <div class="flex space-x-4">
+            <span class="text-slate-500 flex items-center gap-1"><i class="fa-solid fa-heart text-rose-500"></i> Odpowiedzialność</span>
+            <span class="text-slate-500 flex items-center gap-1"><i class="fa-solid fa-brain text-indigo-400"></i> Rozsądek</span>
+        </div>
+    </footer>
+
+    <script>
+        // SOUND ENGINE (Web Audio API)
+        const AudioEngine = {
+            ctx: null,
+
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            },
+
+            playChime() {
+                try {
+                    this.init();
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.12); // G5
+
+                    gain.gain.setValueAtTime(0.12, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } catch(e) {}
+            },
+
+            playHit() {
+                try {
+                    this.init();
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(120, now);
+                    osc.frequency.linearRampToValueAtTime(40, now + 0.18);
+
+                    gain.gain.setValueAtTime(0.22, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start(now);
+                    osc.stop(now + 0.18);
+                } catch(e) {}
+            },
+
+            playBuzzer() {
+                try {
+                    this.init();
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.setValueAtTime(130, now + 0.1);
+
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                } catch(e) {}
+            },
+
+            playPowerUp() {
+                try {
+                    this.init();
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.exponentialRampToValueAtTime(1000, now + 0.25);
+
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                } catch(e) {}
+            }
+        };
+
+        // Baza danych scenariuszy
+        const SCENARIOS = {
+            dom: [
+                {
+                    id: 'dom_gaz',
+                    question: "Wchodzisz do domu i wyczuwasz silną woń gazu w powietrzu. Co zrobisz natychmiast?",
+                    context: "Gaz ulatniający się w zamkniętym pomieszczeniu stwarza śmiertelne zagrożenie wybuchem przy najmniejszej iskierce.",
+                    badge: "Wyzwanie: Gaz",
+                    options: [
+                        {
+                            text: "Włączę światło w przedpokoju, by sprawdzić skąd pachnie gaz.",
+                            correct: false,
+                            feedback: "Przełączenie wyłącznika elektrycznego generuje mikroskopijną iskrę, która w napełnionym gazem pokoju może wywołać potężny wybuch niszczący ściany budynku!",
+                            hint: "Zapamiętaj: Żadnych przełączników ani ognia."
+                        },
+                        {
+                            text: "Szybko otworzę na oścież okna, zakręcę główny zawór gazu (jeśli mogę), wyjdę z budynku i wezwę służby.",
+                            correct: true,
+                            feedback: "Doskonale! Wietrzenie rozrzedza stężenie gazu, a odcięcie źródła i bezpieczna ewakuacja ratuje życie. Po wyjściu dzwoń pod 112 lub pogotowie gazowe 992.",
+                            hint: "Wietrzenie i ewakuacja to podstawa bezpieczeństwa."
+                        },
+                        {
+                            text: "Zadzwonię po pomoc z telefonu stacjonarnego stojącego w kuchni.",
+                            correct: false,
+                            feedback: "Używanie telefonu stacjonarnego lub komórki w pomieszczeniu, w którym ulatnia się gaz, może wytworzyć impuls elektromagnetyczny lub iskrę wyzwalającą wybuch. Dzwoń wyłącznie na zewnątrz!",
+                            hint: "Telefonuj dopiero po opuszczeniu budynku."
+                        }
+                    ]
+                },
+                {
+                    id: 'dom_olej',
+                    question: "Na patelni zapalił się rozgrzany olej do smażenia frytek. Jak go ugasisz?",
+                    context: "Wysoka temperatura oleju powoduje nagły, otwarty płomień. Emocje biorą górę, ale musisz wybrać właściwie.",
+                    badge: "Wyzwanie: Ogień",
+                    options: [
+                        {
+                            text: "Wleję szklankę zimnej wody bezpośrednio na patelnię.",
+                            correct: false,
+                            feedback: "NIGDY nie gaś oleju wodą! Woda błyskawicznie opada pod olej, wrze i gwałtownie paruje, wyrzucając płonące krople tłuszczu w powietrze. Powstaje gigantyczny słup ognia, który spali kuchnię i Twoją twarz!",
+                            hint: "Woda dolana do płonącego tłuszczu to katastrofa."
+                        },
+                        {
+                            text: "Nałożę metalową pokrywkę, wyłączę palnik i przykryję patelnię wilgotnym ręcznikiem.",
+                            correct: true,
+                            feedback: "Świetna decyzja! Odcięcie dopływu tlenu (poprzez przykrycie pokrywką lub specjalnym kocem gaśniczym) skutecznie tłumi ogień. Wyłączenie palnika pozwala na powolne schłodzenie naczynia.",
+                            hint: "Odetnij tlen płomieniom."
+                        },
+                        {
+                            text: "Zacznę biec z płonącą patelnią w stronę balkonu lub zlewu.",
+                            correct: false,
+                            feedback: "Przenoszenie płonącego naczynia grozi rozlaniem rozżarzonego tłuszczu na podłogę, meble, a przede wszystkim na Twoje ciało. Ogień rozprzestrzeni się w ułamku sekundy.",
+                            hint: "Zostaw naczynie na miejscu i odetnij powietrze."
+                        }
+                    ]
+                }
+            ],
+            droga: [
+                {
+                    id: 'droga_ciemno',
+                    question: "Poruszasz się pieszo poboczem słabo oświetlonej drogi poza obszarem zabudowanym po zmierzchu. Gdzie idziesz i co masz na sobie?",
+                    context: "Widoczność pieszego po zmroku bez odblasków to zaledwie 20-30 metrów. Kierowca ma skrajnie mało czasu na reakcję.",
+                    badge: "Wyzwanie: Widoczność",
+                    options: [
+                        {
+                            text: "Idę prawą stroną drogi, mam czarną, ciepłą kurtkę.",
+                            correct: false,
+                            feedback: "Pieszy bez odblasków w ciemnym ubraniu jest niewidoczny. Idąc prawą stroną drogi nie widzisz nadjeżdżających z tyłu pojazdów, przez co nie masz szans uciec na pobocze w razie zagrożenia.",
+                            hint: "Zawsze idź twarzą do nadjeżdżających pojazdów."
+                        },
+                        {
+                            text: "Idę lewą stroną drogi (twarzą do pojazdów) i mam na sobie kamizelkę lub elementy odblaskowe.",
+                            correct: true,
+                            feedback: "Doskonale! Dzięki odblaskom kierowca dostrzeże Cię już z odległości 150 metrów! Idąc lewą stroną, widzisz pojazdy z naprzeciwka i możesz odpowiednio reagować.",
+                            hint: "Odblaski ratują życie pieszym."
+                        },
+                        {
+                            text: "Idę środkiem pobocza, świecąc od czasu do czasu ekranem telefonu komórkowego.",
+                            correct: false,
+                            feedback: "Światło ekranu telefonu jest zbyt słabe, by skutecznie ostrzec kierowcę z dużej odległości, a patrzenie w telefon rozprasza Twoją uwagę i oślepia Cię w ciemności.",
+                            hint: "Ekran telefonu to nie jest odpowiednie światło ostrzegawcze."
+                        }
+                    ]
+                },
+                {
+                    id: 'droga_hulajnoga',
+                    question: "Jedziesz hulajnogą elektryczną i chcesz pokonać przejście dla pieszych. Jak się zachowasz?",
+                    context: "Hulajnogi elektryczne rozwijają spore prędkości. Przejścia dla pieszych wymagają szczególnego zachowania.",
+                    badge: "Wyzwanie: Hulajnoga",
+                    options: [
+                        {
+                            text: "Zjadę z chodnika i przejadę szybko przez pasy na hulajnodze, by nie tamować ruchu.",
+                            correct: false,
+                            feedback: "Wjeżdżanie na przejście dla pieszych hulajnogą (oraz rowerem, o ile nie ma wyznaczonego przejazdu rowerowego) jest zabronione i skrajnie niebezpieczne. Kierowcy nie spodziewają się tak szybkiego obiektu na pasach.",
+                            hint: "Pasy są dla pieszych."
+                        },
+                        {
+                            text: "Zatrzymam się przed przejściem, zejdę z hulajnogi i przeprowadzę ją bezpiecznie na drugą stronę.",
+                            correct: true,
+                            feedback: "Brawo! Prawidłowe zachowanie to zejście z pojazdu i przeprowadzenie go pieszo. Daje to kierowcom czas na zatrzymanie się i gwarantuje pełną kontrolę nad sytuacją.",
+                            hint: "Zejdź z pojazdu, przeprowadź go."
+                        }
+                    ]
+                }
+            ],
+            cyber: [
+                {
+                    id: 'cyber_sms',
+                    question: "Otrzymujesz SMS: 'Twoja paczka została wstrzymana z powodu niedopłaty 1.50 zł. Kliknij w link, aby opłacić: http://poczta-polska-weryfikacja-danych.net/paczka'. Co robisz?",
+                    context: "To jedna z najczęstszych metod wyłudzania pieniędzy oraz danych dostępowych do kont bankowych (phishing).",
+                    badge: "Wyzwanie: Phishing",
+                    options: [
+                        {
+                            text: "Kwota jest bardzo mała. Klikam w link, podaję dane karty, by paczka szybko przyszła.",
+                            correct: false,
+                            feedback: "Błąd! Link prowadzi do fałszywej strony pośrednika płatności. Jeśli podasz tam dane karty lub login do banku, oszuści wyczyszczą Twoje konto ze wszystkich oszczędności!",
+                            hint: "Nigdy nie klikaj w linki do szybkich opłat z SMS-ów."
+                        },
+                        {
+                            text: "Ignoruję wiadomość, usuwam ją lub zgłaszam pod darmowy numer 8080 (CERT Polska).",
+                            correct: true,
+                            feedback: "Wspaniale! Oficjalne firmy kurierskie nigdy nie wysyłają linków do drobnych dopłat. Zgłaszanie takich SMS-ów na numer 8080 pomaga blokować domeny oszustów i chroni innych.",
+                            hint: "Zgłaszaj podejrzane wiadomości."
+                        },
+                        {
+                            text: "Odpisuję na SMS pytając, o jaką paczkę chodzi.",
+                            correct: false,
+                            feedback: "Wysyłanie odpowiedzi potwierdza oszustom, że Twój numer telefonu jest aktywny, co poskutkuje jeszcze większą falą spamu, prób oszustw i telefonów od naciągaczy.",
+                            hint: "Nie wchodź w interakcję z nadawcami spamu."
+                        }
+                    ]
+                }
+            ],
+            pomoc: [
+                {
+                    id: 'pomoc_nieprzytomny',
+                    question: "Widzisz leżącego na chodniku człowieka. Nie rusza się. Jaka jest prawidłowa kolejność Twoich kroków?",
+                    context: "Udzielanie pierwszej pomocy to obowiązek prawny i moralny. Kluczowa jest systematyczność algorytmu Resuscytacji (RKO).",
+                    badge: "Wyzwanie: Pierwsza Pomoc",
+                    options: [
+                        {
+                            text: "Zacznę od razu uciskać klatkę piersiową, bo liczy się każda sekunda.",
+                            correct: false,
+                            feedback: "Zanim dotkniesz poszkodowanego, musisz sprawdzić czy otoczenie jest bezpieczne dla Ciebie oraz sprawdzić czy osoba reaguje. Bezpieczeństwo ratownika jest najważniejsze!",
+                            hint: "Zadbaj najpierw o własne bezpieczeństwo."
+                        },
+                        {
+                            text: "Sprawdzam bezpieczeństwo wokół, oceniam przytomność (głośno pytam i potrząsam za ramiona), udrażniam drogi oddechowe (odchylam głowę do tyłu) i przez 10 sekund oceniam oddech.",
+                            correct: true,
+                            feedback: "Perfekcyjnie! To jest tzw. ocena wstępna. Dopiero po stwierdzeniu braku oddechu (mniej niż 2 prawidłowe oddechy w 10 sekund) dzwonisz po 112 i rozpoczynasz uciski klatki piersiowej.",
+                            hint: "Bezpieczeństwo -> Przytomność -> Udrożnienie dróg -> Oddech."
+                        },
+                        {
+                            text: "Biegnę poszukać apteki lub lekarza w okolicy.",
+                            correct: false,
+                            feedback: "Pozostawienie nieprzytomnej osoby bez oceny jej stanu i wezwania pogotowia drastycznie zmniejsza jej szanse na przeżycie. Musisz natychmiast zabezpieczyć poszkodowanego na miejscu.",
+                            hint: "Działaj na miejscu, wezwij pomoc przez telefon."
+                        }
+                    ]
+                }
+            ]
+        };
+
+        // Stan aplikacji
+        const State = {
+            currentScreen: 'welcomeScreen',
+            globalScore: parseInt(localStorage.getItem('edu_safety_score') || '0'),
+            unlockedBadges: JSON.parse(localStorage.getItem('edu_safety_badges') || '[]'),
+            
+            // Stan aktualnego scenariusza
+            activeZone: null,
+            scenarioIndex: 0,
+            activeScenarios: [],
+
+            // Stan gry zręcznościowej
+            arcade: {
+                running: false,
+                paused: false,
+                score: 0,
+                lives: 3,
+                lastTime: 0,
+                elements: [],
+                playerX: 0,
+                playerWidth: 90,
+                playerHeight: 20,
+                spawnTimer: 0,
+                spawnRate: 1500, // ms
+                speedMultiplier: 1.0
+            },
+
+            addScore(pts) {
+                this.globalScore += pts;
+                localStorage.setItem('edu_safety_score', this.globalScore);
+                document.getElementById('globalScore').innerText = this.globalScore;
+                this.updateRank();
+            },
+
+            unlockBadge(zone) {
+                if (!this.unlockedBadges.includes(zone)) {
+                    this.unlockedBadges.push(zone);
+                    localStorage.setItem('edu_safety_badges', JSON.stringify(this.unlockedBadges));
+                    AudioEngine.playPowerUp();
+                }
+                this.updateBadgeUI();
+            },
+
+            updateBadgeUI() {
+                const badgeEl = document.getElementById('badgeCounter');
+                if(badgeEl) {
+                    badgeEl.innerText = `${this.unlockedBadges.length} / 4`;
+                }
+            },
+
+            updateRank() {
+                let rank = "Rekrut";
+                if (this.globalScore >= 1000) rank = "Młodszy Inspektor";
+                if (this.globalScore >= 2500) rank = "Ekspert Bezpieczeństwa";
+                if (this.globalScore >= 4000) rank = "Mistrz Akademii";
+                
+                document.getElementById('headerLevel').innerText = rank;
+            }
+        };
+
+        // Zarządzanie widocznością ekranów
+        function showScreen(screenId) {
+            // Pauzowanie minigry w tle, jeśli zmieniamy ekran
+            if (State.arcade.running && screenId !== 'arcadeScreen') {
+                quitArcade();
+            }
+
+            const screens = ['welcomeScreen', 'zoneSelectScreen', 'scenarioScreen', 'arcadeScreen', 'summaryScreen'];
+            screens.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    if (id === screenId) {
+                        el.classList.remove('hidden');
+                    } else {
+                        el.classList.add('hidden');
+                    }
+                }
+            });
+            State.currentScreen = screenId;
+            State.updateBadgeUI();
+        }
+
+        function startZoneSelect() {
+            showScreen('zoneSelectScreen');
+            AudioEngine.playChime();
+        }
+
+        // Obsługa stref szkoleniowych
+        function launchZone(zoneKey) {
+            AudioEngine.playChime();
+            State.activeZone = zoneKey;
+            State.scenarioIndex = 0;
+            // Kopiujemy pytania ze strefy
+            State.activeScenarios = [...SCENARIOS[zoneKey]];
+            
+            showScreen('scenarioScreen');
+            renderScenario();
+        }
+
+        function renderScenario() {
+            if (State.scenarioIndex >= State.activeScenarios.length) {
+                // Koniec strefy - odblokowujemy odznakę
+                State.unlockBadge(State.activeZone);
+                finishZone();
+                return;
+            }
+
+            const current = State.activeScenarios[State.scenarioIndex];
+            
+            // Konfiguracja UI
+            const zoneLabel = document.getElementById('scenarioZoneLabel');
+            const progressLabel = document.getElementById('scenarioProgressLabel');
+            const progressBar = document.getElementById('scenarioProgressBar');
+            const questionText = document.getElementById('scenarioQuestionText');
+            const contextText = document.getElementById('scenarioContext');
+            const optionsContainer = document.getElementById('optionsContainer');
+            const bgIcon = document.getElementById('bgScenarioIcon');
+
+            // Mapowanie stylów i ikon stref
+            let zoneColor = 'text-blue-400';
+            let iconClass = 'fa-house-fire';
+            if (State.activeZone === 'dom') { zoneColor = 'text-amber-400'; iconClass = 'fa-house-fire'; }
+            if (State.activeZone === 'droga') { zoneColor = 'text-blue-400'; iconClass = 'fa-road'; }
+            if (State.activeZone === 'cyber') { zoneColor = 'text-emerald-400'; iconClass = 'fa-user-shield'; }
+            if (State.activeZone === 'pomoc') { zoneColor = 'text-rose-400'; iconClass = 'fa-kit-medical'; }
+
+            zoneLabel.innerText = `Misja: ${State.activeZone.toUpperCase()}`;
+            zoneLabel.className = `font-bold tracking-wider uppercase ${zoneColor}`;
+            
+            progressLabel.innerText = `Pytanie ${State.scenarioIndex + 1}/${State.activeScenarios.length}`;
+            
+            const pct = ((State.scenarioIndex) / State.activeScenarios.length) * 100;
+            progressBar.style.width = `${pct}%`;
+
+            bgIcon.innerHTML = `<i class="fa-solid ${iconClass}"></i>`;
+
+            questionText.innerText = current.question;
+            contextText.innerText = `"${current.context}"`;
+
+            // Generowanie opcji
+            optionsContainer.innerHTML = '';
+            current.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-4 rounded-xl bg-slate-950/40 border border-slate-800/80 hover:border-slate-600 hover:bg-slate-950/80 text-xs md:text-sm font-semibold transition flex justify-between items-center group relative overflow-hidden";
+                btn.innerHTML = `
+                    <span class="pr-4 leading-relaxed">${opt.text}</span>
+                    <i class="fa-solid fa-chevron-right text-slate-600 group-hover:text-slate-400 transition-colors"></i>
+                `;
+                btn.onclick = () => selectOption(idx);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function selectOption(index) {
+            const current = State.activeScenarios[State.scenarioIndex];
+            const option = current.options[index];
+
+            // Konfiguracja Modalu Informacyjnego
+            const modal = document.getElementById('feedbackModal');
+            const content = document.getElementById('feedbackContent');
+            const iconWrap = document.getElementById('feedbackIconWrap');
+            const icon = document.getElementById('feedbackIcon');
+            const title = document.getElementById('feedbackTitle');
+            const text = document.getElementById('feedbackText');
+            const nextBtn = document.getElementById('nextScenarioBtn');
+
+            if (option.correct) {
+                // Dobra odpowiedź
+                AudioEngine.playChime();
+                State.addScore(250);
+                
+                iconWrap.className = "w-16 h-16 rounded-full flex items-center justify-center text-3xl mx-auto bg-emerald-500/10 text-emerald-400";
+                icon.className = "fa-solid fa-circle-check animate-bounce";
+                title.innerText = "Świetna decyzja!";
+                title.className = "heading-font text-2xl font-extrabold text-emerald-400 text-center space-y-3";
+                text.innerHTML = option.feedback;
+            } else {
+                // Zła odpowiedź
+                AudioEngine.playBuzzer();
+                
+                iconWrap.className = "w-16 h-16 rounded-full flex items-center justify-center text-3xl mx-auto bg-rose-500/10 text-rose-400";
+                icon.className = "fa-solid fa-triangle-exclamation animate-pulse";
+                title.innerText = "Zagrożenie!";
+                title.className = "heading-font text-2xl font-extrabold text-rose-500 text-center space-y-3";
+                text.innerHTML = `<span class="block mb-2 font-bold text-slate-200">Uważaj:</span> ${option.feedback} <br><br> <span class="text-xs text-amber-400"><strong>Wskazówka:</strong> ${option.hint}</span>`;
+            }
+
+            // Pokaż modal z lekkim opóźnieniem / animacją
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 50);
+        }
+
+        function dismissFeedback() {
+            const modal = document.getElementById('feedbackModal');
+            const content = document.getElementById('feedbackContent');
+            
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                // Przejście do kolejnego pytania
+                State.scenarioIndex++;
+                renderScenario();
+            }, 150);
+        }
+
+        // Kończenie misji strefowej
+        function finishZone() {
+            if (State.unlockedBadges.length === 4) {
+                // Wszystkie odznaki zdobyte -> Ekran końcowy
+                renderSummaryScreen();
+            } else {
+                // Powrót do menu wyboru stref
+                showScreen('zoneSelectScreen');
+            }
+        }
+
+        function renderSummaryScreen() {
+            showScreen('summaryScreen');
+            document.getElementById('summaryScore').innerText = State.globalScore;
+            
+            // Generowanie wizualnych odznak na podsumowaniu
+            const badgesContainer = document.getElementById('summaryBadges');
+            badgesContainer.innerHTML = '';
+            
+            const badgeMeta = {
+                dom: { icon: 'fa-house-fire', color: 'text-amber-400 bg-amber-500/10 border-amber-500/30', label: 'Dom' },
+                droga: { icon: 'fa-road', color: 'text-blue-400 bg-blue-500/10 border-blue-500/30', label: 'Droga' },
+                cyber: { icon: 'fa-user-shield', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30', label: 'Cyber' },
+                pomoc: { icon: 'fa-kit-medical', color: 'text-rose-400 bg-rose-500/10 border-rose-500/30', label: 'Pomoc' }
+            };
+
+            State.unlockedBadges.forEach(bKey => {
+                const meta = badgeMeta[bKey];
+                if (meta) {
+                    const badgeDiv = document.createElement('div');
+                    badgeDiv.className = `flex flex-col items-center justify-center p-3 rounded-xl border ${meta.color} w-16 h-16`;
+                    badgeDiv.innerHTML = `
+                        <i class="fa-solid ${meta.icon} text-lg mb-1"></i>
+                        <span class="text-[9px] uppercase font-bold">${meta.label}</span>
+                    `;
+                    badgesContainer.appendChild(badgeDiv);
+                }
+            });
+        }
+
+        // MINIGRA "ŁAPACZ BEZPIECZEŃSTWA"
+        const canvas = document.getElementById('arcadeCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Baza elementów spadających w zręcznościówce
+        const ARCADE_ITEMS = [
+            // Pozytywne (zielone)
+            { text: 'Kask rowerowy', type: 'good', icon: '🚲', color: '#10b981' },
+            { text: 'Odblask nocny', type: 'good', icon: '⭐', color: '#10b981' },
+            { text: 'Zapięte pasy', type: 'good', icon: '🛡️', color: '#10b981' },
+            { text: 'Silne Hasło', type: 'good', icon: '🔑', color: '#10b981' },
+            { text: 'Apteczka RKO', type: 'good', icon: '🩹', color: '#10b981' },
+            
+            // Negatywne (czerwone)
+            { text: 'Pożar oleju', type: 'bad', icon: '🔥', color: '#f43f5e' },
+            { text: 'Podejrzany link', type: 'bad', icon: '📧', color: '#f43f5e' },
+            { text: 'Zepsuty kabel', type: 'bad', icon: '⚡', color: '#f43f5e' },
+            { text: 'Czerwone światło', type: 'bad', icon: '🛑', color: '#f43f5e' },
+            { text: 'Brak odblasku', type: 'bad', icon: '🚶🏽', color: '#f43f5e' }
+        ];
+
+        class FallingElement {
+            constructor() {
+                const item = ARCADE_ITEMS[Math.floor(Math.random() * ARCADE_ITEMS.length)];
+                this.text = item.text;
+                this.type = item.type;
+                this.icon = item.icon;
+                this.color = item.color;
+                
+                this.radius = 22;
+                this.x = Math.random() * (canvas.width - this.radius * 2) + this.radius;
+                this.y = -this.radius;
+                
+                this.speed = (Math.random() * 2 + 1.5) * State.arcade.speedMultiplier;
+                this.rotation = 0;
+                this.rotSpeed = Math.random() * 0.04 - 0.02;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+
+                // Otoczka tarczy
+                ctx.beginPath();
+                ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = 2.5;
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.stroke();
+
+                // Ikona emoji pośrodku
+                ctx.font = '20px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.icon, 0, 0);
+
+                ctx.restore();
+
+                // Napis nad lub pod obiektem
+                ctx.font = 'bold 9px sans-serif';
+                ctx.fillStyle = '#94a3b8';
+                ctx.textAlign = 'center';
+                ctx.fillText(this.text, this.x, this.y - this.radius - 6);
+            }
+
+            update() {
+                this.y += this.speed;
+                this.rotation += this.rotSpeed;
+            }
+        }
+
+        // Integracja sterowania
+        let keys = { left: false, right: false };
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') keys.left = true;
+            if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') keys.right = true;
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') keys.left = false;
+            if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') keys.right = false;
+        });
+
+        // Obsługa sterowania wskaźnikiem (mysz / dotyk) na canvasie
+        function handlePointer(clientX) {
+            if (!State.arcade.running || State.arcade.paused) return;
+            const rect = canvas.getBoundingClientRect();
+            // Przeliczenie współrzędnych z uwzględnieniem skalowania CSS
+            const scaleX = canvas.width / rect.width;
+            const x = (clientX - rect.left) * scaleX;
+            
+            // Centrowanie gracza na kursorze
+            State.arcade.playerX = Math.max(0, Math.min(canvas.width - State.arcade.playerWidth, x - State.arcade.playerWidth / 2));
+        }
+
+        canvas.addEventListener('mousemove', (e) => handlePointer(e.clientX));
+        canvas.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 0) {
+                handlePointer(e.touches[0].clientX);
+            }
+        }, { passive: true });
+
+        // Ustawienie wymiarów płótna z uwzględnieniem pikselizacji
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            // Reset pozycji platformy gracza po zmianie rozdzielczości
+            State.arcade.playerX = canvas.width / 2 - State.arcade.playerWidth / 2;
+        }
+
+        function startArcadeGame() {
+            AudioEngine.playChime();
+            showScreen('arcadeScreen');
+            document.getElementById('arcadeIntro').classList.remove('hidden');
+            
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            
+            State.arcade.running = false;
+            State.arcade.paused = false;
+            State.arcade.score = 0;
+            State.arcade.lives = 3;
+            State.arcade.elements = [];
+            State.arcade.speedMultiplier = 1.0;
+            
+            document.getElementById('arcadeScore').innerText = '0';
+            document.getElementById('arcadeLives').innerText = '3';
+        }
+
+        function startArcadeLoop() {
+            AudioEngine.playPowerUp();
+            document.getElementById('arcadeIntro').classList.add('hidden');
+            State.arcade.running = true;
+            State.arcade.lastTime = performance.now();
+            requestAnimationFrame(arcadeLoop);
+        }
+
+        // Główna pętla gry zręcznościowej
+        function arcadeLoop(timestamp) {
+            if (!State.arcade.running) return;
+
+            if (!State.arcade.paused) {
+                updateArcade(timestamp);
+            }
+            renderArcade();
+
+            requestAnimationFrame(arcadeLoop);
+        }
+
+        function updateArcade(timestamp) {
+            const dt = timestamp - State.arcade.lastTime;
+            State.arcade.lastTime = timestamp;
+
+            // Klawiatura - poruszanie tarczy awaryjnej
+            const keyboardSpeed = 6;
+            if (keys.left) {
+                State.arcade.playerX = Math.max(0, State.arcade.playerX - keyboardSpeed);
+            }
+            if (keys.right) {
+                State.arcade.playerX = Math.min(canvas.width - State.arcade.playerWidth, State.arcade.playerX + keyboardSpeed);
+            }
+
+            // Generowanie nowych elementów
+            State.arcade.spawnTimer += dt;
+            if (State.arcade.spawnTimer >= State.arcade.spawnRate) {
+                State.arcade.elements.push(new FallingElement());
+                State.arcade.spawnTimer = 0;
+                
+                // Powolne przyspieszanie gry wraz z postępem
+                State.arcade.speedMultiplier += 0.02;
+                State.arcade.spawnRate = Math.max(800, 1500 - (State.arcade.score * 15));
+            }
+
+            // Aktualizacja obiektów
+            for (let i = State.arcade.elements.length - 1; i >= 0; i--) {
+                const el = State.arcade.elements[i];
+                el.update();
+
+                // Sprawdzenie kolizji z platformą (tarczą) gracza
+                const playerY = canvas.height - 40;
+                const playerHeight = State.arcade.playerHeight;
+                const playerWidth = State.arcade.playerWidth;
+
+                const collisionX = el.x >= State.arcade.playerX && el.x <= State.arcade.playerX + playerWidth;
+                const collisionY = (el.y + el.radius >= playerY) && (el.y - el.radius <= playerY + playerHeight);
+
+                if (collisionX && collisionY) {
+                    // Wykryto kolizję (Złapanie)
+                    if (el.type === 'good') {
+                        AudioEngine.playChime();
+                        State.arcade.score += 100;
+                        State.addScore(100);
+                        document.getElementById('arcadeScore').innerText = State.arcade.score;
+                    } else {
+                        // Złapanie zagrożenia - utrata życia
+                        AudioEngine.playHit();
+                        State.arcade.lives--;
+                        document.getElementById('arcadeLives').innerText = State.arcade.lives;
+                        if (State.arcade.lives <= 0) {
+                            endArcadeGame();
+                        }
+                    }
+                    State.arcade.elements.splice(i, 1);
+                    continue;
+                }
+
+                // Usunięcie elementów spadających poniżej dolnej krawędzi
+                if (el.y - el.radius > canvas.height) {
+                    // Pominięcie dobrego zachowania to mała kara, ale nie kończy gry
+                    if (el.type === 'good') {
+                        // Tracisz szansę na punkty
+                    }
+                    State.arcade.elements.splice(i, 1);
+                }
+            }
+        }
+
+        function renderArcade() {
+            // Czyszczenie ekranu z lekkim efektem smugi
+            ctx.fillStyle = 'rgba(11, 15, 25, 0.4)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Rysowanie siatki technologicznej w tle (efekt retro)
+            ctx.strokeStyle = 'rgba(59, 130, 246, 0.03)';
+            ctx.lineWidth = 1;
+            const gridSize = 40;
+            for (let x = 0; x < canvas.width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+
+            // Rysowanie spadających obiektów
+            State.arcade.elements.forEach(el => el.draw());
+
+            // Rysowanie Tarczy gracza (Platformy)
+            const py = canvas.height - 40;
+            const px = State.arcade.playerX;
+            const pw = State.arcade.playerWidth;
+            const ph = State.arcade.playerHeight;
+
+            ctx.save();
+            ctx.beginPath();
+            
+            // Efekt łuku (tarcza ochronna)
+            ctx.moveTo(px, py + ph);
+            ctx.quadraticCurveTo(px + pw / 2, py - 10, px + pw, py + ph);
+            ctx.lineTo(px + pw, py + ph);
+            ctx.lineTo(px, py + ph);
+            ctx.closePath();
+
+            ctx.fillStyle = '#10b981';
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = '#10b981';
+            ctx.fill();
+
+            // Pasek technologiczny w środku tarczy
+            ctx.beginPath();
+            ctx.rect(px + 4, py + ph - 8, pw - 8, 4);
+            ctx.fillStyle = '#065f46';
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function toggleArcadePause() {
+            if (!State.arcade.running) return;
+            State.arcade.paused = !State.arcade.paused;
+            const overlay = document.getElementById('arcadePauseOverlay');
+            const btn = document.getElementById('arcadePauseBtn');
+            
+            if (State.arcade.paused) {
+                overlay.classList.remove('hidden');
+                btn.innerText = "Wznów";
+            } else {
+                overlay.classList.add('hidden');
+                btn.innerText = "Pauza";
+                State.arcade.lastTime = performance.now();
+            }
+        }
+
+        function endArcadeGame() {
+            State.arcade.running = false;
+            AudioEngine.playBuzzer();
+            
+            // Powiadomienie o wyniku zręcznościówki bez standardowego alertu
+            const modal = document.getElementById('feedbackModal');
+            const iconWrap = document.getElementById('feedbackIconWrap');
+            const icon = document.getElementById('feedbackIcon');
+            const title = document.getElementById('feedbackTitle');
+            const text = document.getElementById('feedbackText');
+            
+            iconWrap.className = "w-16 h-16 rounded-full flex items-center justify-center text-3xl mx-auto bg-amber-500/10 text-amber-400";
+            icon.className = "fa-solid fa-trophy";
+            title.innerText = "Koniec Rozgrywki";
+            title.className = "heading-font text-2xl font-extrabold text-amber-400 text-center space-y-3";
+            text.innerHTML = `Twój pancerz tarczy uległ zniszczeniu. <br><br> Zdobyłeś <strong>${State.arcade.score} pkt</strong>, które zasiliły Twój ogólny profil akademii! Zapraszamy do kolejnych podejść, aby pobić rekord.`;
+
+            document.getElementById('nextScenarioBtn').onclick = () => {
+                dismissFeedback();
+                showScreen('welcomeScreen');
+            };
+
+            modal.classList.remove('hidden');
+        }
+
+        function quitArcade() {
+            State.arcade.running = false;
+            showScreen('welcomeScreen');
+        }
+
+        // Inicjalizacja całej gry przy załadowaniu okna
+        window.onload = function() {
+            State.updateRank();
+            State.updateBadgeUI();
+            showScreen('welcomeScreen');
+        }
+    </script>
+</body>
+</html>
